@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة مهام العائلة</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            pointer-events: none;
+        }
+
+        .container {
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-in;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 35px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+        }
+
+        .header h1 {
+            font-size: 2.3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 45px;
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
+        }
+
+        .login-form, .admin-panel, .user-panel {
+            display: none;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .login-form.active, .admin-panel.active, .user-panel.active {
+            display: block;
+        }
+
+        .login-box {
+            max-width: 450px;
+            margin: 0 auto;
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 35px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        }
+
+        .btn-small {
+            padding: 8px 18px;
+            font-size: 14px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .task-card:hover {
+            transform: translateX(-8px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .task-card h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+
+        .task-card.completed {
+            opacity: 0.7;
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .task-card.completed h3 {
+            color: #28a745;
+            text-decoration: line-through;
+        }
+
+        .user-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .priority-high { background: #fee; color: #dc3545; }
+        .priority-medium { background: #fff3cd; color: #856404; }
+        .priority-normal { background: #d4edda; color: #155724; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h2 {
+            font-size: 3em;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .stat-card p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .member-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .member-card:hover {
+            transform: translateX(-5px);
+        }
+
+        .member-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .member-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .error-msg, .success-msg {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-msg {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 15px 28px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-radius: 10px 10px 0 0;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .search-box {
+            margin-bottom: 25px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 45px 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .task-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .date-badge {
+            background: #f0f0f0;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #666;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                width: 100%;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideDown 0.4s ease-out;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 نظام إدارة مهام العائلة</h1>
+            <p class="subtitle" id="welcomeMsg">مرحباً بك في نظامك العائلي المتطور</p>
+        </div>
+
+        <div class="content">
+            <!-- Login Form -->
+            <div class="login-form active">
+                <div class="login-box">
+                    <h2 style="margin-bottom: 10px; color: #333; text-align: center;">تسجيل الدخول</h2>
+                    <p style="text-align: center; color: #666; margin-bottom: 30px;">أدخل بياناتك للوصول إلى حسابك</p>
+                    <div class="error-msg" id="loginError"></div>
+                    <form id="loginFormElement">
+                        <div class="form-group">
+                            <label>👤 اسم المستخدم</label>
+                            <input type="text" id="username" placeholder="أدخل اسم المستخدم" required>
+                        </div>
+                        <div class="form-group">
+                            <label>🔒 كلمة المرور</label>
+                            <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%;">دخول</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div class="admin-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="color: #333;">لوحة التحكم</h2>
+                    <button onclick="logout()" class="btn btn-secondary">تسجيل خروج 🚪</button>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('tasks')">📋 المهام</button>
+                    <button class="tab" onclick="switchTab('members')">👥 الأعضاء</button>
+                    <button class="tab" onclick="switchTab('addTask')">➕ إضافة مهمة</button>
+                    <button class="tab" onclick="switchTab('reports')">📊 التقارير</button>
+                </div>
+
+                <!-- Tasks Tab -->
+                <div id="tasksTab" class="tab-content active">
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h2 id="totalTasks">0</h2>
+                            <p>📝 إجمالي المهام</p>
+                        </div>
+                        <div class="stat-card">
+                            <h2 id="completedTasks">0</h2>
+                            <p>✅ المهام المكتملة</p>
+                        </div>
+                        <div class="stat-card">
+                            <h2 id="pendingTasks">0</h2>
+                            <p>⏳ المهام المعلقة</p>
+                        </div>
+                        <div class="stat-card">
+                            <h2 id="totalMembers">0</h2>
+                            <p>👥 عدد الأعضاء</p>
+                        </div>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" id="searchTasks" placeholder="🔍 ابحث عن مهمة..." oninput="filterTasks()">
+                    </div>
+
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="setFilter('all')">الكل</button>
+                        <button class="filter-btn" onclick="setFilter('pending')">المعلقة</button>
+                        <button class="filter-btn" onclick="setFilter('completed')">المكتملة</button>
+                        <button class="filter-btn" onclick="setFilter('high')">عالية الأولوية</button>
+                    </div>
+
+                    <h3 style="margin-bottom: 20px; color: #333;">جميع المهام</h3>
+                    <div id="allTasksList"></div>
+                </div>
+
+                <!-- Members Tab -->
+                <div id="membersTab" class="tab-content">
+                    <h3 style="margin-bottom: 20px; color: #333;">إدارة الأعضاء</h3>
+                    <div class="success-msg" id="memberSuccess"></div>
+                    <form id="addMemberForm" style="background: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                        <h4 style="margin-bottom: 20px; color: #667eea;">➕ إضافة عضو جديد</h4>
+                        <div class="form-group">
+                            <label>الاسم الكامل</label>
+                            <input type="text" id="memberName" placeholder="أدخل اسم العضو" required>
+                        </div>
+                        <div class="form-group">
+                            <label>كلمة المرور</label>
+                            <input type="password" id="memberPassword" placeholder="أدخل كلمة المرور" required>
+                        </div>
+                        <button type="submit" class="btn">إضافة عضو</button>
+                    </form>
+                    <h4 style="margin-bottom: 20px; color: #333;">قائمة الأعضاء</h4>
+                    <div id="membersList"></div>
+                </div>
+
+                <!-- Add Task Tab -->
+                <div id="addTaskTab" class="tab-content">
+                    <h3 style="margin-bottom: 20px; color: #333;">إضافة مهمة جديدة</h3>
+                    <div class="success-msg" id="taskSuccess"></div>
+                    <form id="addTaskForm" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                        <div class="form-group">
+                            <label>📝 عنوان المهمة</label>
+                            <input type="text" id="taskTitle" placeholder="مثال: تنظيف الغرفة" required>
+                        </div>
+                        <div class="form-group">
+                            <label>📄 الوصف التفصيلي</label>
+                            <textarea id="taskDesc" rows="4" placeholder="اكتب تفاصيل المهمة..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>👤 تعيين إلى</label>
+                            <select id="taskAssignee" required>
+                                <option value="">اختر عضو من العائلة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>⭐ الأولوية</label>
+                            <select id="taskPriority">
+                                <option value="عادية">عادية</option>
+                                <option value="متوسطة">متوسطة</option>
+                                <option value="عالية">عالية</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>📅 تاريخ التسليم (اختياري)</label>
+                            <input type="date" id="taskDueDate">
+                        </div>
+                        <button type="submit" class="btn">إضافة المهمة ✓</button>
+                    </form>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reportsTab" class="tab-content">
+                    <h3 style="margin-bottom: 20px; color: #333;">📊 تقارير الأداء</h3>
+                    <div id="reportsContent"></div>
+                </div>
+            </div>
+
+            <!-- User Panel -->
+            <div class="user-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="color: #333;">مهامي الشخصية</h2>
+                    <button onclick="logout()" class="btn btn-secondary">تسجيل خروج 🚪</button>
+                </div>
+
+                <div class="stats" style="margin-bottom: 30px;">
+                    <div class="stat-card">
+                        <h2 id="userTotalTasks">0</h2>
+                        <p>📝 مهامي</p>
+                    </div>
+                    <div class="stat-card">
+                        <h2 id="userCompletedTasks">0</h2>
+                        <p>✅ أنجزت</p>
+                    </div>
+                    <div class="stat-card">
+                        <h2 id="userPendingTasks">0</h2>
+                        <p>⏳ قيد الإنجاز</p>
+                    </div>
+                </div>
+
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="setUserFilter('all')">الكل</button>
+                    <button class="filter-btn" onclick="setUserFilter('pending')">المعلقة</button>
+                    <button class="filter-btn" onclick="setUserFilter('completed')">المكتملة</button>
+                </div>
+
+                <h3 style="margin-bottom: 20px; color: #333;">قائمة المهام</h3>
+                <div id="userTasksList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let users = [
+            { username: 'QCY', password: '1', role: 'admin', name: 'المدير' },
+            { username: 'محمد', password: '1234', role: 'member', name: 'محمد' },
+            { username: 'فاطمة', password: '1234', role: 'member', name: 'فاطمة' }
+        ];
+
+        let tasks = [
+            { 
+                id: 1, 
+                title: 'تنظيف الغرفة', 
+                description: 'تنظيف وترتيب غرفة النوم بالكامل', 
+                assignee: 'محمد', 
+                completed: false, 
+                priority: 'عادية',
+                dueDate: '2025-10-05',
+                createdAt: new Date().toISOString()
+            },
+            { 
+                id: 2, 
+                title: 'شراء المستلزمات', 
+                description: 'شراء مستلزمات البقالة للأسبوع', 
+                assignee: 'فاطمة', 
+                completed: false, 
+                priority: 'عالية',
+                dueDate: '2025-10-03',
+                createdAt: new Date().toISOString()
+            }
+        ];
+
+        let currentUser = null;
+        let currentFilter = 'all';
+        let userFilter = 'all';
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? 
+                'linear-gradient(135deg, #28a745 0%, #218838 100%)' : 
+                'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+            notification.style.color = 'white';
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
+        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                document.querySelector('.login-form').classList.remove('active');
+                
+                if (user.role === 'admin') {
+                    document.querySelector('.admin-panel').classList.add('active');
+                    document.getElementById('welcomeMsg').textContent = 'مرحباً ' + user.name + ' 👋';
+                    loadAdminPanel();
+                } else {
+                    document.querySelector('.user-panel').classList.add('active');
+                    document.getElementById('welcomeMsg').textContent = 'مرحباً ' + user.name + ' 👋';
+                    loadUserPanel();
+                }
+                showNotification('تم تسجيل الدخول بنجاح! 🎉', 'success');
+            } else {
+                const errorMsg = document.getElementById('loginError');
+                errorMsg.textContent = '❌ اسم المستخدم أو كلمة المرور غير صحيحة';
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        function logout() {
+            currentUser = null;
+            document.querySelector('.admin-panel').classList.remove('active');
+            document.querySelector('.user-panel').classList.remove('active');
+            document.querySelector('.login-form').classList.add('active');
+            document.getElementById('welcomeMsg').textContent = 'مرحباً بك في نظامك العائلي المتطور';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            showNotification('تم تسجيل الخروج بنجاح', 'success');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            if (tabName === 'tasks') loadAllTasks();
+            if (tabName === 'members') loadMembers();
+            if (tabName === 'addTask') updateAssigneeSelect();
+            if (tabName === 'reports') loadReports();
+        }
+
+        function loadAdminPanel() {
+            updateStats();
+            loadAllTasks();
+            updateAssigneeSelect();
+            updateProgressBar();
+        }
+
+        function updateStats() {
+            const completedCount = tasks.filter(t => t.completed).length;
+            const pendingCount = tasks.filter(t => !t.completed).length;
+            
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('completedTasks').textContent = completedCount;
+            document.getElementById('pendingTasks').textContent = pendingCount;
+            document.getElementById('totalMembers').textContent = users.filter(u => u.role === 'member').length;
+        }
+
+        function updateProgressBar() {
+            const completedCount = tasks.filter(t => t.completed).length;
+            const percentage = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
+            document.getElementById('progressBar').style.width = percentage + '%';
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-buttons .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadAllTasks();
+        }
+
+        function setUserFilter(filter) {
+            userFilter = filter;
+            document.querySelectorAll('.user-panel .filter-buttons .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadUserPanel();
+        }
+
+        function filterTasks() {
+            loadAllTasks();
+        }
+
+        function loadAllTasks() {
+            const container = document.getElementById('allTasksList');
+            const searchTerm = document.getElementById('searchTasks').value.toLowerCase();
+            container.innerHTML = '';
+            
+            let filteredTasks = tasks.filter(task => {
+                const matchesSearch = task.title.toLowerCase().includes(searchTerm) || 
+                                    task.description.toLowerCase().includes(searchTerm);
+                
+                if (currentFilter === 'all') return matchesSearch;
+                if (currentFilter === 'pending') return matchesSearch && !task.completed;
+                if (currentFilter === 'completed') return matchesSearch && task.completed;
+                if (currentFilter === 'high') return matchesSearch && task.priority === 'عالية';
+                return matchesSearch;
+            });
+            
+            if (filteredTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>لا توجد مهام</h3>
+                        <p>لم يتم العثور على مهام تطابق البحث</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredTasks.forEach(task => {
+                const priorityClass = task.priority === 'عالية' ? 'priority-high' : 
+                                    task.priority === 'متوسطة' ? 'priority-medium' : 'priority-normal';
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-card' + (task.completed ? ' completed' : '');
+                
+                const dueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString('ar-SA') : 'غير محدد';
+                const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
+                
+                taskCard.innerHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <span class="user-badge">${task.assignee}</span>
+                        <span class="priority-badge ${priorityClass}">⭐ ${task.priority}</span>
+                        ${isOverdue ? '<span class="priority-badge priority-high">⚠️ متأخرة</span>' : ''}
+                    </div>
+                    <h3>${task.title}</h3>
+                    <p style="color: #666; margin-bottom: 10px;">${task.description}</p>
+                    <div class="task-meta">
+                        <span>📅 التسليم: <span class="date-badge">${dueDate}</span></span>
+                        <span>${task.completed ? '✅ مكتملة' : '⏳ قيد التنفيذ'}</span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button onclick="deleteTask(${task.id})" class="btn btn-danger btn-small">حذف 🗑️</button>
+                        ${!task.completed ? `<button onclick="markAsComplete(${task.id})" class="btn btn-success btn-small">تم الإنجاز ✓</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(taskCard);
+            });
+        }
+
+        function markAsComplete(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = true;
+                loadAllTasks();
+                updateStats();
+                updateProgressBar();
+                showNotification('تم وضع علامة على المهمة كمكتملة ✅', 'success');
+            }
+        }
+
+        document.getElementById('addMemberForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('memberName').value;
+            const password = document.getElementById('memberPassword').value;
+            
+            if (users.find(u => u.username === name)) {
+                showNotification('اسم المستخدم موجود بالفعل', 'error');
+                return;
+            }
+            
+            users.push({
+                username: name,
+                password: password,
+                role: 'member',
+                name: name
+            });
+            
+            showNotification('تم إضافة العضو بنجاح! 🎉', 'success');
+            document.getElementById('memberName').value = '';
+            document.getElementById('memberPassword').value = '';
+            loadMembers();
+            updateStats();
+        });
+
+        function loadMembers() {
+            const container = document.getElementById('membersList');
+            container.innerHTML = '';
+            
+            const members = users.filter(u => u.role === 'member');
+            
+            if (members.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <p>لا يوجد أعضاء حالياً</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            members.forEach(member => {
+                const memberTasks = tasks.filter(t => t.assignee === member.name);
+                const completedTasks = memberTasks.filter(t => t.completed).length;
+                
+                const memberCard = document.createElement('div');
+                memberCard.className = 'member-card';
+                memberCard.innerHTML = `
+                    <div class="member-info">
+                        <div class="member-avatar">${member.name.charAt(0)}</div>
+                        <div>
+                            <strong style="font-size: 1.1em;">${member.name}</strong>
+                            <p style="color: #666; font-size: 14px; margin-top: 5px;">
+                                📝 المهام: ${memberTasks.length} | ✅ المنجزة: ${completedTasks}
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="deleteMember('${member.username}')" class="btn btn-danger btn-small">حذف</button>
+                `;
+                container.appendChild(memberCard);
+            });
+        }
+
+        function deleteMember(username) {
+            if (confirm('هل أنت متأكد من حذف هذا العضو؟ سيتم حذف جميع مهامه أيضاً.')) {
+                const member = users.find(u => u.username === username);
+                users = users.filter(u => u.username !== username);
+                tasks = tasks.filter(t => t.assignee !== member.name);
+                loadMembers();
+                updateStats();
+                updateProgressBar();
+                showNotification('تم حذف العضو بنجاح', 'success');
+            }
+        }
+
+        document.getElementById('addTaskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const task = {
+                id: Date.now(),
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDesc').value,
+                assignee: document.getElementById('taskAssignee').value,
+                priority: document.getElementById('taskPriority').value,
+                dueDate: document.getElementById('taskDueDate').value,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            tasks.push(task);
+            showNotification('تم إضافة المهمة بنجاح! 🎉', 'success');
+            document.getElementById('addTaskForm').reset();
+            updateStats();
+            updateProgressBar();
+        });
+
+        function deleteTask(taskId) {
+            if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
+                tasks = tasks.filter(t => t.id !== taskId);
+                loadAllTasks();
+                updateStats();
+                updateProgressBar();
+                showNotification('تم حذف المهمة بنجاح', 'success');
+            }
+        }
+
+        function updateAssigneeSelect() {
+            const select = document.getElementById('taskAssignee');
+            select.innerHTML = '<option value="">اختر عضو من العائلة</option>';
+            
+            users.filter(u => u.role === 'member').forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.name;
+                option.textContent = member.name;
+                select.appendChild(option);
+            });
+        }
+
+        function loadUserPanel() {
+            const userTasks = tasks.filter(t => t.assignee === currentUser.name);
+            const completedCount = userTasks.filter(t => t.completed).length;
+            const pendingCount = userTasks.filter(t => !t.completed).length;
+            
+            document.getElementById('userTotalTasks').textContent = userTasks.length;
+            document.getElementById('userCompletedTasks').textContent = completedCount;
+            document.getElementById('userPendingTasks').textContent = pendingCount;
+            
+            const container = document.getElementById('userTasksList');
+            container.innerHTML = '';
+            
+            let filteredTasks = userTasks;
+            if (userFilter === 'pending') filteredTasks = userTasks.filter(t => !t.completed);
+            if (userFilter === 'completed') filteredTasks = userTasks.filter(t => t.completed);
+            
+            if (filteredTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎉</div>
+                        <h3>رائع!</h3>
+                        <p>لا توجد مهام معلقة</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredTasks.forEach(task => {
+                const priorityClass = task.priority === 'عالية' ? 'priority-high' : 
+                                    task.priority === 'متوسطة' ? 'priority-medium' : 'priority-normal';
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-card' + (task.completed ? ' completed' : '');
+                
+                const dueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString('ar-SA') : 'غير محدد';
+                const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
+                
+                taskCard.innerHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <span class="priority-badge ${priorityClass}">⭐ ${task.priority}</span>
+                        ${isOverdue ? '<span class="priority-badge priority-high">⚠️ متأخرة</span>' : ''}
+                    </div>
+                    <h3>${task.title}</h3>
+                    <p style="color: #666; margin-bottom: 10px;">${task.description}</p>
+                    <div class="task-meta">
+                        <span>📅 التسليم: <span class="date-badge">${dueDate}</span></span>
+                        <span>${task.completed ? '✅ مكتملة' : '⏳ قيد التنفيذ'}</span>
+                    </div>
+                    <button onclick="toggleTaskStatus(${task.id})" class="btn ${task.completed ? 'btn-secondary' : 'btn-success'}" style="margin-top: 15px;">
+                        ${task.completed ? 'إلغاء الإكمال' : 'تم الإنجاز ✓'}
+                    </button>
+                `;
+                container.appendChild(taskCard);
+            });
+        }
+
+        function toggleTaskStatus(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                loadUserPanel();
+                showNotification(task.completed ? 'أحسنت! تم إنجاز المهمة 🎉' : 'تم إلغاء إكمال المهمة', 'success');
+            }
+        }
+
+        function loadReports() {
+            const container = document.getElementById('reportsContent');
+            const members = users.filter(u => u.role === 'member');
+            
+            let reportsHTML = '<div style="display: grid; gap: 25px;">';
+            
+            members.forEach(member => {
+                const memberTasks = tasks.filter(t => t.assignee === member.name);
+                const completedTasks = memberTasks.filter(t => t.completed);
+                const pendingTasks = memberTasks.filter(t => !t.completed);
+                const completionRate = memberTasks.length > 0 ? 
+                    ((completedTasks.length / memberTasks.length) * 100).toFixed(0) : 0;
+                
+                reportsHTML += `
+                    <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                            <div class="member-avatar">${member.name.charAt(0)}</div>
+                            <div>
+                                <h3 style="color: #667eea; margin-bottom: 5px;">${member.name}</h3>
+                                <p style="color: #666;">معدل الإنجاز: <strong>${completionRate}%</strong></p>
+                            </div>
+                        </div>
+                        <div class="progress-bar" style="margin-bottom: 20px;">
+                            <div class="progress-fill" style="width: ${completionRate}%;"></div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center;">
+                            <div>
+                                <div style="font-size: 2em; color: #667eea; font-weight: bold;">${memberTasks.length}</div>
+                                <div style="color: #666; font-size: 14px;">إجمالي المهام</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2em; color: #28a745; font-weight: bold;">${completedTasks.length}</div>
+                                <div style="color: #666; font-size: 14px;">المنجزة</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2em; color: #ffc107; font-weight: bold;">${pendingTasks.length}</div>
+                                <div style="color: #666; font-size: 14px;">المعلقة</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            reportsHTML += '</div>';
+            container.innerHTML = reportsHTML;
+        }
+    </script>
+</body>
+</html>
